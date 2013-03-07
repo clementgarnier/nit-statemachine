@@ -7,8 +7,8 @@ class StateMachine
         var final_states: ArraySet[State]
 
         init(name: String, alphabet: ArraySet[Char], initial_states: ArraySet[State], final_states: ArraySet[State]) do
-                assert not initial_states.empty
-                assert not final_states.empty
+                assert not initial_states.is_empty
+                assert not final_states.is_empty
                 
                 self.name = name
                 self.alphabet = alphabet
@@ -97,7 +97,7 @@ class Transition
         var from_state: State
         var to_state: State
 
-        init(character: nullable Char, from_state: State, to_state: State) do
+        private init(character: nullable Char, from_state: State, to_state: State) do
                 self.character = character
                 self.from_state = from_state
                 self.to_state = to_state
