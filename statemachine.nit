@@ -6,15 +6,12 @@ class StateMachine
         var initial_states: ArraySet[State]
         var final_states: ArraySet[State]
 
-        init(name: String, alphabet: ArraySet[Char]) do
+        init(name: String, alphabet: ArraySet[Char], initial_states: ArraySet[State], final_states: ArraySet[State]) do
+                assert not initial_states.empty
+                assert not final_states.empty
+                
                 self.name = name
                 self.alphabet = alphabet
-
-                var initial_state = new State("initial state")
-                var final_state = new State("final state")
-
-                self.add_initial_state(initial_state)
-                self.add_final_state(final_state)
         end
 
         ###########
@@ -25,14 +22,10 @@ class StateMachine
                 return true
         end
 
-        fun is_final_state: Bool do
+        fun is_final_state(s: State): Bool do
                 return true
         end
         
-        fun get_state_by_name(n: String): nullable State do
-               return null 
-        end
-
         ###################
         # SPECIAL GETTERS #
         ###################
@@ -49,17 +42,6 @@ class StateMachine
         # BUILD FUNCTIONS #
         ###################
 
-        # Add a state (and related transitions) to the state machine
-        fun add_state(s: State) do
-                # PRE CONDITION
-                # One of the transitions of s must link to one of the existing states (otherwise the state is orphan)
-        end
-
-        # Unreference a state from the machine
-        fun remove_state(s: State) do
-
-        end
-
         fun add_initial_state(s: State) do
                 
         end
@@ -68,16 +50,6 @@ class StateMachine
                 
         end
                 
-        # Create a new state machine by combining it to another one
-        # link_transitions is an ArraySet of transitions between the two machines
-        fun combine(sm: StateMachine, link_transitions: ArraySet[Transition]): StateMachine do
-                # PRE CONDITIONS
-                # link_transitions cannot be empty
-                # link_transitions must contain only transitions from machine A to machine B
-
-                return new StateMachine("combined state machine", new ArraySet[Char]())
-        end
-
         #############
         # EXECUTION #
         #############
@@ -107,11 +79,11 @@ class State
                 self.transitions = new ArraySet[Transition]
         end
 
-        fun add_transition(t: Transition) do
+        fun add_transition(c: Char, s: State) do
 
         end
 
-        fun add_transitions(ts: ArraySet[Transition]) do
+        fun add_transitions(ts: ArrayMap[Char, State]) do
 
         end
 
