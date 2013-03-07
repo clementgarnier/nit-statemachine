@@ -49,6 +49,11 @@ class StateMachine
         fun add_final_state(s: State) do
                 
         end
+
+        fun remove_state(s: State) do
+                assert initial_states.length > 1 or initial_states.first != s
+                assert final_states.length > 1 or final_states.first != s
+        end
                 
         #############
         # EXECUTION #
