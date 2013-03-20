@@ -1,5 +1,7 @@
 module statemachine
 
+import pipeline
+
 class StateMachine
         var name: String
         var alphabet: ArraySet[Char]
@@ -51,8 +53,8 @@ class StateMachine
         #############
 
         # Try to execute a word
-        fun execute(w: String): nullable MachineRunner do
-               return null
+        fun execute(word: String): nullable MachineRunner do
+               return null 
         end
 
         ###################
@@ -90,26 +92,111 @@ end
 
 class Transition
         var character: nullable Char
-        var from_state: State
         var to_state: State
 
-        private init(character: nullable Char, from_state: State, to_state: State) do
+        private init(character: nullable Char, to_state: State) do
                 self.character = character
-                self.from_state = from_state
                 self.to_state = to_state
+        end
+
+        fun accepts(c: Char): Bool do
+                return self.character == c
         end
 end
 
 class MachineRunner
 
         var machine: StateMachine
+
         var word: String
-        var current_index: Int = 0
         var current_state: nullable State = null
 
+        var status: Bool = false
+        var path: Array[State] = new Array[State]
+
         init(machine: StateMachine, word: String) do
-                self.machine = machine
                 self.word = word
+                self.machine = machine
+        end
+
+        private fun current_char: Char do
+                return self.word.first
+        end
+
+        private fun go_to_next_char do
+                self.word = self.word.to_a.skip_head(1).to_s
+        end
+
+        private fun launch_runners(states: ArraySet[State]): nullable MachineRunner do
+                var runners = new Array[MachineRunner]
+                
+                # Launch recursive runners
+                for state in states do
+                        var runner = new MachineRunner(self.machine, self.word)
+                        runner.run(state)
+
+                        # Keep successful runners
+                        if runner.status then runners.add(runner)
+                end
+
+                var min_path: Int = -1
+                var min_runner: nullable MachineRunner = null
+
+                # Select runner with minimum path
+                for runner in runners do
+                        if min_path == -1 or runner.path.length < min_path then
+                                min_runner = runner
+                        end
+                end
+
+                return min_runner
+        end
+
+        private fun merge_runner(runner: nullable MachineRunner) do
+                if runner != null then
+                        self.status = runner.status
+                        self.path = runner.path
+                else
+                        self.status = false
+                end
+        end
+
+        fun start do
+                var min_runner = self.launch_runners(self.machine.initial_states)
+                
+                merge_runner(min_runner)
+        end
+
+        fun run(from_state: State) do
+                self.current_state = from_state
+
+                var transitions = self.current_state.transitions
+
+                if(self.word.is_empty and self.machine.final_states.has(from_state)) then
+                        # Word is finished and current state is final: success
+                        self.status = true
+                else
+                        var possible_transitions = new Array[Transition]
+
+                        # Filter transitions with current char
+                        for transition in transitions do
+                                if transition.accepts(self.current_char) then possible_transitions.add(transition)
+                        end
+
+                        if(possible_transitions.is_empty) then
+                                # No transitions left, dead end
+                                self.status = false
+                        else if(possible_transitions.length == 1) then
+                                # Only one possible transition, go to next state
+                                self.go_to_next_char
+                                self.run(possible_transitions.first.to_state)
+                        else
+                                # Several possible transitions, instanciate new runners recursively
+                                var min_runner = self.launch_runners(self.machine.initial_states)
+
+                                merge_runner(min_runner)
+                        end
+                end
         end
 end
 
