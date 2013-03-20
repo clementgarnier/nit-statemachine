@@ -13,18 +13,6 @@ class StateMachine
                 self.name = name
                 self.alphabet = alphabet
         end
-
-        ###########
-        # HELPERS #
-        ###########
- 
-        fun is_initial_state(s: State): Bool do
-                return true
-        end
-
-        fun is_final_state(s: State): Bool do
-                return true
-        end
         
         ###################
         # SPECIAL GETTERS #
@@ -50,8 +38,11 @@ class StateMachine
                 
         end
 
-        fun remove_state(s: State) do
+        fun remove_initial_state(s: State) do
                 assert initial_states.length > 1 or initial_states.first != s
+        end
+
+        fun remove_final_state(s: State) do
                 assert final_states.length > 1 or final_states.first != s
         end
                 
@@ -60,8 +51,8 @@ class StateMachine
         #############
 
         # Try to execute a word
-        fun execute(w: String): Bool do
-               return true 
+        fun execute(w: String): nullable MachineRunner do
+               return null
         end
 
         ###################
@@ -109,18 +100,12 @@ class Transition
         end
 end
 
-class MachineIterator
-
-        super Iterator[State]
+class MachineRunner
 
         var machine: StateMachine
         var word: String
         var current_index: Int = 0
         var current_state: nullable State = null
-
-        redef fun is_ok: Bool do
-                return self.current_state != null
-        end
 
         init(machine: StateMachine, word: String) do
                 self.machine = machine
