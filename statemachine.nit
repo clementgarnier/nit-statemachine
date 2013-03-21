@@ -14,6 +14,8 @@ class StateMachine
                 
                 self.name = name
                 self.alphabet = alphabet
+                self.initial_states = initial_states
+                self.final_states = final_states
         end
         
         ###################
@@ -21,11 +23,11 @@ class StateMachine
         ###################
 
         fun get_states: ArraySet[State] do
-                return new ArraySet[State]()
+                return new ArraySet[State]
         end
 
         fun get_transitions: ArraySet[Transition] do
-                return new ArraySet[Transition]()
+                return new ArraySet[Transition]
         end
         
         ###################
@@ -33,19 +35,23 @@ class StateMachine
         ###################
 
         fun add_initial_state(s: State) do
-                
+                initial_states.add(s) 
         end
 
         fun add_final_state(s: State) do
-                
+                final_states.add(s)
         end
 
         fun remove_initial_state(s: State) do
                 assert initial_states.length > 1 or initial_states.first != s
+
+                initial_states.remove(s)
         end
 
         fun remove_final_state(s: State) do
                 assert final_states.length > 1 or final_states.first != s
+
+                final_states.remove(s)
         end
                 
         #############
@@ -62,8 +68,35 @@ class StateMachine
         ###################
 
         # Display the transitions table
-        redef fun to_s do
-                return ""
+        fun display do
+                print(self.name)
+
+                printn("Alphabet: ")
+                printn(self.alphabet.join(" "))
+
+                print("")
+
+                printn("Initial states: ")
+                printn(self.initial_states.join(","))
+                
+                print("")
+
+                printn("Final states: ")
+                printn(self.final_states.join(","))
+
+                print("")
+
+                print("Transitions table:")
+                printn("from\t")
+                printn("to\t")
+                printn("character")
+                for transition in self.get_transitions do
+                        printn(transition.from_state.to_s.to_a + "\t")
+                        printn(transition.to_state.to_s.to_a + "\t")
+                        printn(transition.character.to_s)
+                end
+
+                print("")
         end
 end
 
@@ -78,24 +111,34 @@ class State
         end
 
         fun add_transition(c: Char, s: State) do
-
+                self.transitions.add(new Transition(c, self, s))
         end
 
         fun add_transitions(ts: ArrayMap[Char, State]) do
-
+                for c, s in ts do
+                      self.transitions.add(new Transition(c, self, s))
+                end
         end
 
-        fun remove_transition(t: Transition) do
+        fun remove_transition(c: Char, s: State) do
+                for transition in self.transitions do
+                        if transition.character == c and transition.to_state == s then self.transitions.remove(transition)
+                end
+        end
 
+        redef fun to_s do
+                return name
         end
 end
 
 class Transition
         var character: nullable Char
+        var from_state: State
         var to_state: State
 
-        private init(character: nullable Char, to_state: State) do
+        private init(character: nullable Char, from_state: State, to_state: State) do
                 self.character = character
+                self.from_state = from_state
                 self.to_state = to_state
         end
 
@@ -172,7 +215,7 @@ class MachineRunner
 
                 var transitions = self.current_state.transitions
 
-                if(self.word.is_empty and self.machine.final_states.has(from_state)) then
+                if self.word.is_empty and self.machine.final_states.has(from_state) then
                         # Word is finished and current state is final: success
                         self.status = true
                 else
@@ -183,10 +226,10 @@ class MachineRunner
                                 if transition.accepts(self.current_char) then possible_transitions.add(transition)
                         end
 
-                        if(possible_transitions.is_empty) then
+                        if possible_transitions.is_empty then
                                 # No transitions left, dead end
                                 self.status = false
-                        else if(possible_transitions.length == 1) then
+                        else if possible_transitions.length == 1 then
                                 # Only one possible transition, go to next state
                                 self.go_to_next_char
                                 self.run(possible_transitions.first.to_state)

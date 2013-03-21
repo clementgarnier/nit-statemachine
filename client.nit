@@ -1,7 +1,7 @@
 import statemachine
 
 # Create a new alphabet
-var alphabet = new ArraySet[Char]()
+var alphabet = new ArraySet[Char]
 alphabet.add('a')
 alphabet.add('b')
 alphabet.add('c')
@@ -23,7 +23,7 @@ state1.add_transition('c', state2)
 state2.add_transition('d', state1)
 
 # Add several transitions to S2
-var ts = new ArrayMap[Char, State]()
+var ts = new ArrayMap[Char, State]
 ts['c'] = state1
 ts['d'] = state2
 
@@ -36,4 +36,6 @@ var final_states = new ArraySet[State]
 final_states.add(state2)
 
 var sm = new StateMachine("Example State Machine", alphabet, initial_states, final_states)
+
+sm.display
 
