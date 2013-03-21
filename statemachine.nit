@@ -23,11 +23,31 @@ class StateMachine
         ###################
 
         fun get_states: ArraySet[State] do
-                return new ArraySet[State]
+                return self.get_recursive_states(self.initial_states)
+        end
+
+        private fun get_recursive_states(initial_states: ArraySet[State]): ArraySet[State] do
+                for state in initial_states do
+                        for transition in state.transitions do
+                                if self.alphabet.has(transition.character) and not initial_states.has(transition.to_state) then
+                                        initial_states.add(transition.to_state)
+                                        initial_states.add_all(get_recursive_states(initial_states))
+                                end
+                        end
+                end
+
+                return initial_states
         end
 
         fun get_transitions: ArraySet[Transition] do
-                return new ArraySet[Transition]
+                var transitions = new ArraySet[Transition]
+                var states = self.get_states
+
+                for s in states do
+                        transitions.add_all(s.transitions)
+                end
+
+                return transitions
         end
         
         ###################
@@ -54,15 +74,6 @@ class StateMachine
                 final_states.remove(s)
         end
                 
-        #############
-        # EXECUTION #
-        #############
-
-        # Try to execute a word
-        fun execute(word: String): nullable MachineRunner do
-               return null 
-        end
-
         ###################
         # PRINT FUNCTIONS #
         ###################
@@ -91,9 +102,10 @@ class StateMachine
                 printn("to\t")
                 printn("character")
                 for transition in self.get_transitions do
+                        print("")
                         printn(transition.from_state.to_s.to_a + "\t")
                         printn(transition.to_state.to_s.to_a + "\t")
-                        printn(transition.character.to_s)
+                        printn(transition.character.to_s) 
                 end
 
                 print("")
@@ -132,18 +144,18 @@ class State
 end
 
 class Transition
-        var character: nullable Char
+        var character: Char
         var from_state: State
         var to_state: State
 
-        private init(character: nullable Char, from_state: State, to_state: State) do
+        private init(character: Char, from_state: State, to_state: State) do
                 self.character = character
                 self.from_state = from_state
                 self.to_state = to_state
         end
 
         fun accepts(c: Char): Bool do
-                return self.character == c
+                return c == ' ' or self.character == c
         end
 end
 
@@ -158,8 +170,8 @@ class MachineRunner
         var path: Array[State] = new Array[State]
 
         init(machine: StateMachine, word: String) do
-                self.word = word
                 self.machine = machine
+                self.word = word
         end
 
         private fun current_char: Char do
@@ -215,15 +227,22 @@ class MachineRunner
 
                 var transitions = self.current_state.transitions
 
-                if self.word.is_empty and self.machine.final_states.has(from_state) then
-                        # Word is finished and current state is final: success
-                        self.status = true
+                if self.word.is_empty then
+                        if self.machine.final_states.has(from_state) then
+                                # Word is finished and current state is final: success
+                                self.status = true
+                        else
+                                # Word is finished and current state is not final: failure
+                                self.status = false
+                        end
                 else
                         var possible_transitions = new Array[Transition]
 
                         # Filter transitions with current char
                         for transition in transitions do
-                                if transition.accepts(self.current_char) then possible_transitions.add(transition)
+                                if self.machine.alphabet.has(transition.character) and transition.accepts(self.current_char) then
+                                        possible_transitions.add(transition)
+                                end
                         end
 
                         if possible_transitions.is_empty then
@@ -235,7 +254,11 @@ class MachineRunner
                                 self.run(possible_transitions.first.to_state)
                         else
                                 # Several possible transitions, instanciate new runners recursively
-                                var min_runner = self.launch_runners(self.machine.initial_states)
+                                var possible_states = new ArraySet[State]
+                                for t in possible_transitions do
+                                        possible_states.add(t.to_state)
+                                end
+                                var min_runner = self.launch_runners(possible_states)
 
                                 merge_runner(min_runner)
                         end

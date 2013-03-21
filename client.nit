@@ -39,3 +39,10 @@ var sm = new StateMachine("Example State Machine", alphabet, initial_states, fin
 
 sm.display
 
+var runner = new MachineRunner(sm, "bcdcd")
+runner.start
+
+printn("status: ")
+print(runner.status)
+print(runner.path.to_s)
+
