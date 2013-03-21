@@ -39,10 +39,58 @@ var sm = new StateMachine("Example State Machine", alphabet, initial_states, fin
 
 sm.display
 
+print("Running the state machine with 'bcdcd' (should be accepted)")
+
 var runner = new MachineRunner(sm, "bcdcd")
 runner.start
 
 printn("status: ")
 print(runner.status)
-print(runner.path.to_s)
+print(runner.path.join("->"))
+
+print("Running the state machine with 'bccc' (should be accepted)")
+
+runner = new MachineRunner(sm, "bccc")
+runner.start
+
+printn("status: ")
+print(runner.status)
+print(runner.path.join("->"))
+
+print("Running the state machine with 'bcd' (should be accepted)")
+
+runner = new MachineRunner(sm, "bcd")
+runner.start
+
+printn("status: ")
+print(runner.status)
+print(runner.path.join("->"))
+
+print("Running the state machine with 'bd' (should be refused)")
+
+runner = new MachineRunner(sm, "bd")
+runner.start
+
+printn("status: ")
+print(runner.status)
+print(runner.path.join("->"))
+
+print("Running the state machine with 'cc' (should be refused)")
+
+runner = new MachineRunner(sm, "cc")
+runner.start
+
+printn("status: ")
+print(runner.status)
+print(runner.path.join("->"))
+
+print("Running the state machine with 'cdb' (should be refused)")
+
+runner = new MachineRunner(sm, "cdb")
+runner.start
+
+printn("status: ")
+print(runner.status)
+print(runner.path.join("->"))
+
 

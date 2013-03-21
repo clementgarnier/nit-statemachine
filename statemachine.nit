@@ -101,6 +101,7 @@ class StateMachine
                 printn("from\t")
                 printn("to\t")
                 printn("character")
+
                 for transition in self.get_transitions do
                         print("")
                         printn(transition.from_state.to_s.to_a + "\t")
@@ -210,7 +211,7 @@ class MachineRunner
         private fun merge_runner(runner: nullable MachineRunner) do
                 if runner != null then
                         self.status = runner.status
-                        self.path = runner.path
+                        self.path.add_all(runner.path)
                 else
                         self.status = false
                 end
@@ -224,6 +225,7 @@ class MachineRunner
 
         fun run(from_state: State) do
                 self.current_state = from_state
+                self.path.add(from_state)
 
                 var transitions = self.current_state.transitions
 
@@ -258,6 +260,8 @@ class MachineRunner
                                 for t in possible_transitions do
                                         possible_states.add(t.to_state)
                                 end
+
+                                self.go_to_next_char
                                 var min_runner = self.launch_runners(possible_states)
 
                                 merge_runner(min_runner)
@@ -265,4 +269,3 @@ class MachineRunner
                 end
         end
 end
-
